@@ -1,0 +1,611 @@
+## Global parameters
+## Please, note that this will override the image parameters,
+## including dependencies, configured to use the global value
+
+# global:
+#   imageRegistry: myRegistryName
+#   imagePullPolicy: Always
+#   imagePullSecrets:
+#     - myRegistryKeySecretName
+#   storageClass: "-"
+
+## String to partially override helper.fullname template (will maintain the release name)
+nameOverride:
+
+## String to fully override helper.fullname template
+fullnameOverride:
+
+## DaemonSet, Deployment or StatefulSet
+kind: Deployment
+
+## Number of replicas
+replicaCount: 2
+
+## Workload image
+image:
+  registry: docker.io
+  repository: library/nginx
+
+  ## The command field corresponds to entrypoint in the Docker runtime
+  # ex: command: ["/home/app/binary"]
+  command:
+
+  # tag will default to the chart's appVersion
+  tag: stable
+
+  ## Specify a imagePullPolicy, defaults to 'Always'
+  ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
+  pullPolicy:
+
+  ## Optionally specify an array of imagePullSecrets.
+  ## Secrets must be manually created in the namespace.
+  ## ref: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry
+  # pullSecrets:
+  #   - myImageRegistryKeySecretName
+  pullSecrets: []
+
+## Additional command line arguments to pass to Workload's command
+## E.g. to specify the default SSL certificate you can use
+extraArgs: {}
+
+## Configures the ports the Workload listens on,
+## and the port they are exposed on (see service.)
+containerPorts:
+  - name: http
+    containerPort: 80
+    protocol: TCP
+
+## Containers' resource requests and limits
+## ref: http://kubernetes.io/docs/user-guide/compute-resources
+## We usually recommend to always specify default resources and
+## to leave this as a conscious choice for the user.
+resources:
+  requests:
+    cpu: 125m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
+
+## Security Context policies for controller pods
+## See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster for
+## notes on enabling and using sysctls
+podSecurityContext:
+  fsGroup: 100
+  runAsUser: 101
+  runAsGroup: 101
+
+## Kubernetes Security Context
+## https://kubernetes.io/docs/tasks/configure-pod-container/security-context
+securityContext:
+  allowPrivilegeEscalation: false
+
+## Liveness and readiness probe values
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
+# livenessProbe:
+#   httpGet:
+#     path: /healthz
+#     port: 80
+#     scheme: HTTP
+#   failureThreshold: 3
+#   initialDelaySeconds: 10
+#   periodSeconds: 10
+#   successThreshold: 1
+#   timeoutSeconds: 1
+# readinessProbe:
+#   httpGet:
+#     path: /readyz
+#     port: 80
+#     scheme: HTTP
+#   failureThreshold: 3
+#   initialDelaySeconds: 10
+#   periodSeconds: 10
+#   successThreshold: 1
+#   timeoutSeconds: 1
+livenessProbe: {}
+readinessProbe: {}
+
+## Additional environment variables to set
+## E.g:
+## extraEnvs:
+##   - name: FOO
+##     valueFrom:
+##       secretKeyRef:
+##         key: FOO
+##         name: secret-resource
+##   - name: FOO
+##     value: Hello
+##   - name: BAR
+##     value: World
+extraEnvs: []
+
+## Required on CNI based K8s installations, since CNI and hostport don't mix yet.
+## Can be deprecated once https://github.com/kubernetes/kubernetes/issues/23920 is merged
+hostNetwork: false
+
+## Optionally, change this to ClusterFirstWithHostNet in case you have 'hostNetwork: true'.
+## By default, while using host network, name resolution uses the host's DNS. If you wish the Workload
+## to keep resolving names inside the k8s network, use ClusterFirstWithHostNet.
+dnsPolicy: ClusterFirst
+
+## updateStrategy
+## ref: https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/#update-strategies
+updateStrategy: {}
+
+## minReadySeconds to avoid killing pods before we are ready
+minReadySeconds: 0
+
+## Affinity for pod assignment
+## Ref: https://kubernetes.io/docs/concepts/configuration/assign-pod-node/#affinity-and-anti-affinity
+affinity: {}
+
+## Node labels for pod assignment. Evaluated as a template.
+## Ref: https://kubernetes.io/docs/user-guide/node-selection
+nodeSelector: {}
+
+## Tolerations for pod assignment
+## Ref: https://kubernetes.io/docs/concepts/configuration/taint-and-toleration
+tolerations: []
+
+## Topology spread constraints rely on node labels to identify the topology domain(s) that each Node is in.
+## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-topology-spread-constraints
+## topologySpreadConstraints:
+##   - maxSkew: 1
+##     topologyKey: failure-domain.beta.kubernetes.io/zone
+##     whenUnsatisfiable: DoNotSchedule
+##     labelSelector:
+##       matchLabels:
+##         app.kubernetes.io/instance: workload
+topologySpreadConstraints: []
+
+## terminationGracePeriodSeconds
+terminationGracePeriodSeconds: 60
+
+## Container lifecycle
+lifecycle: {}
+
+## priorityClassName
+## ref: https://kubernetes.io/docs/concepts/configuration/pod-priority-preemption/#priorityclass
+priorityClassName: ""
+
+## Rollback limit
+revisionHistoryLimit: 10
+
+## Additional containers to be added to the controller pod
+## See https://github.com/lemonldap-ng-controller/lemonldap-ng-controller as example.
+extraContainers: []
+
+## Additional volumeMounts to the controller main container.
+## extraVolumeMounts:
+##   - name: copy-portal-skins
+##     mountPath: /var/lib/lemonldap-ng/portal/skins
+extraVolumeMounts: []
+
+## Additional volumes to the controller pod.
+## extraVolumes
+##   - name: copy-portal-skins
+##     emptyDir: {}
+extraVolumes: []
+
+## Containers, which are run before the app containers are started.
+## extraInitContainers:
+##   - name: init-myservice
+##     image: bitnami/minideb
+##     command: ['sh', '-c', 'install_packages dnsutils && until nslookup myservice; do echo waiting for myservice; sleep 2; done;']
+extraInitContainers: []
+
+## Add annotations to all the deployed resources
+commonAnnotations: {}
+
+## Pod annotations
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations
+podAnnotations: {}
+
+## Add labels to all the deployed resources
+commonLabels: {}
+
+## Pod extra labels
+## ref: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels
+podLabels: {}
+
+## Pods Service Account
+## ref: https://kubernetes.io/docs/tasks/configure-pod-container/configure-service-account
+serviceAccount:
+  ## Specifies whether a ServiceAccount should be created
+  create: true
+
+  ## The name of the ServiceAccount to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Role Based Access
+## ref: https://kubernetes.io/docs/admin/authorization/rbac
+rbac:
+  ## Specifies whether RBAC rules should be created
+  create: true
+
+  ## The name of the RBAC rules to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Role rules
+  # roleRules:
+  #   - apiGroups:
+  #       - ""
+  #     resources:
+  #       - endpoints
+  #     verbs:
+  #       - get
+  roleRules:
+
+  ## ClusterRole rules
+  # clusterroleRules:
+  #   - apiGroups:
+  #       - ""
+  #     resources:
+  #       - nodes
+  #     verbs:
+  #       - "get"
+  #       - "list"
+  #       - "watch"
+  clusterroleRules:
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Configuration Map
+## ref: https://kubernetes.io/docs/concepts/configuration/configmap
+configMap:
+  ## Specifies whether a ConfigMap should be created (if .values is not empty)
+  create: true
+
+  ## The name of the ConfigMap to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Load the key-values as environment variables in the Workload's main container
+  loadAsEnvVars: true
+
+  ## Populate a Volume with data stored in the ConfigMap
+  mount:
+    enabled: false
+    name: config
+    path: /etc/config
+
+  ## Contents
+  # values:
+  #   foo: bar
+  values: {}
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Secret
+## ref: https://kubernetes.io/docs/concepts/configuration/secret
+secret:
+  ## Specifies whether a Secret should be created (if .values is not empty)
+  create: true
+
+  ## The name of the Secret to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Load the key-values as environment variables in the Workload's main container
+  loadAsEnvVars: true
+
+  ## Populate a Volume with data stored in the ConfigMap
+  mount:
+    enabled: false
+    name: secret
+    path: /etc/secret
+
+  ## Type
+  ## ref: https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
+  type: Opaque
+
+  ## Contents
+  # values:
+  #   foo: YmFyCg==
+  values: {}
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Enable persistence using Persistent Volume Claims
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+persistence:
+  ## If true, use a Persistent Volume Claim, If false, use emptyDir
+  enabled: true
+
+  ## Volume name for for Persistent Volume Claim or emptyDir:
+  name: data
+
+  ## Mountpoint for Persistent Volume Claim or emptyDir
+  path: /data
+
+  ## Persistent Volume Storage Class
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-" then storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is
+  ##   set, choosing the default provisioner.  (gp2 on AWS, standard on
+  ##   GKE, AWS & OpenStack)
+  storageClass:
+
+  ## If persistence is enabled, and this value is defined,
+  ## then accept the value as an existing Persistent Volume Claim to which
+  ## the container should be bound
+  existingClaim:
+
+  ## If persistence is enabled, and this value is defined, then
+  ## accept the value as an existing Persistent Volume to which
+  ## should be added as match label selector to the volumeClaimTemplate
+  existingVolume:
+
+  ## Persistent Volume Access Mode
+  accessModes:
+    - ReadWriteOnce
+
+  ## Persistent Volume size
+  size: 1Gi
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb
+podDisruptionBudget:
+  ## Specifies whether a podDisruptionBudget should be created
+  create: false
+
+  ## The name of the Pod Disruption Budget to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Mutually exclusive
+  ## Min number of pods that must still be available after the eviction
+  minAvailable: 1
+  ## Max number of pods that can be unavailable after the eviction
+  maxUnavailable: 1
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## If true, create & use Pod Security Policy resources
+## https://kubernetes.io/docs/concepts/policy/pod-security-policy
+podSecurityPolicy:
+  ## Specifies whether a podSecurityPolicy should be created
+  create: true
+
+  ## The name of the podSecurityPolicy to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Service parameters
+service:
+  ## Specifies whether a Service should be created (if .values is not empty)
+  create: true
+
+  ## The name of the Service to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Service type
+  type: ClusterIP
+
+  ## Configures the ports the Workload is exposed on
+  ## Specify the nodePort value(s) for the LoadBalancer and NodePort service types.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
+      protocol: TCP
+      nodePort:
+
+  ## clusterIP (optional)
+  clusterIP:
+
+  ## List of IP addresses at which the controller services are available
+  ## Ref: https://kubernetes.io/docs/user-guide/services/#external-ips
+  externalIPs: []
+
+  ## loadBalancerIP (optional, cloud specific)
+  ## ref: http://kubernetes.io/docs/user-guide/services/#type-loadbalancer
+  loadBalancerIP:
+
+  ## Load Balancer sources
+  ## https://kubernetes.io/docs/tasks/access-application-cluster/configure-cloud-provider-firewall/#restrict-access-for-loadbalancer-service
+  loadBalancerSourceRanges: []
+
+  ## Set external traffic policy to: "Local" to preserve source IP on providers supporting it
+  ## Ref: https://kubernetes.io/docs/tutorials/services/source-ip/#source-ip-for-services-with-typeloadbalancer
+  externalTrafficPolicy: ""
+  healthCheckNodePort: 0
+
+  ## Provide any additional annotations which may be required. This can be used to
+  ## set the LoadBalancer service type to internal only.
+  ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#internal-load-balancer
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Configure the Ingress resource that allows you to access the service externally
+## ref: http://kubernetes.io/docs/user-guide/ingress
+ingress:
+  ## Specifies whether a Ingress should be created (if .values is not empty)
+  create: true
+
+  ## The name of the Ingress to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Ingress Path type (defaults to ImplementationSpecific)
+  pathType:
+
+  ## When the ingress is enabled, a host pointing to this will be created
+  hostname: app.local
+
+  ## The application Path (defaults to /). You may need to set this to '/*' in order to use this
+  ## with ALB ingress controllers.
+  path:
+
+  ## The list of additional hostnames to be covered with this ingress record.
+  ## Most likely the hostname above will be enough, but in the event more hosts are needed, this is an array
+  # extraHosts:
+  # - name: app2.local
+  #   path: /
+  #   serviceName: app2
+  #   servicePort: 8080
+  # - name: app2.local
+  #   path: /
+  #   serviceName: app2
+  #   servicePort: 8080
+  extraHosts:
+
+  ## Enable TLS configuration for the hostname defined at ingress.hostname parameter (defaults to false)
+  ## TLS certificates will be retrieved from a TLS secret with name: {{- printf "%s-tls" .Values.ingress.hostname }}
+  ## You can use the ingress.secrets parameter to create this TLS secret or relay on cert-manager to create it
+  tls:
+
+  ## The tls configuration for additional hostnames to be covered with this ingress record.
+  ## see: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
+  # extraTls:
+  # - hosts:
+  #     - app2.local
+  #   secretName: app2.local-tls
+  # - hosts:
+  #     - app3.local
+  #   secretName: app3.local-tls
+  extraTls:
+
+  ## Ingress annotations done as key:value pairs
+  ## For a full list of possible NginX ingress annotations, please see
+  ## ref: https://github.com/kubernetes/ingress-nginx/blob/master/docs/user-guide/nginx-configuration/annotations.md
+  ## If tls is set to true, annotation ingress.kubernetes.io/secure-backends: "true" will automatically be set
+  ## If certManager is set to true, annotation kubernetes.io/tls-acme: "true" will automatically be set
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  # annotations:
+  #   kubernetes.io/ingress.class: nginx
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Prometheus exporter parameters
+metrics:
+  create: false
+
+  ## Prometheus Operator ServiceMonitor configuration
+  serviceMonitor:
+    enabled: true
+
+    ## The name of the ServiceMonitor to use.
+    ## If not set and create is true, a name is generated using the helper.fullname template
+    name:
+
+    ## Workload's metrics endpoint
+    endpoints:
+      - path: /metrics
+        port: http
+        interval: 30s
+
+    ## Annotations evaluated as a template.
+    ## Only used if `create` is `true`.
+    annotations: {}
+
+    ## Provide any additional label which may be required.
+    labels: {}
+
+  prometheusRule:
+    enabled: false
+    additionalLabels: {}
+    namespace: ""
+    rules: []
+
+## Autoscaling parameters
+## Configure the Horizontal Pod Autoscaler resource that allows you automatically scales the number of Pods
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  ## Specifies whether a Ingress should be created (if .values is not empty)
+  create: true
+
+  ## The name of the Ingress to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  # Minimum amount of Pods
+  minReplicas: 1
+
+  # Maxiumum amount of Pods
+  maxReplicas: 10
+
+  # Custom metrics
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 50
+    # use a "Pods" metric, which takes the average of the
+    # given metric across all pods controlled by the autoscaling target
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests
+        target:
+          # target 500 milli-requests per second,
+          # which is 1 request every two seconds
+          averageValue: 500m
+          type: AverageValue
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}

@@ -1,0 +1,53 @@
+{{- if .Values.podSecurityPolicy.create }}
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: {{ default (include "helper.fullname" .) .Values.podSecurityPolicy.name }}
+  {{- if or .Values.podSecurityPolicy.annotations .Values.commonAnnotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.commonAnnotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+    {{- if .Values.podSecurityPolicy.annotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.podSecurityPolicy.annotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels: {{- include "helper.labels" . | nindent 4 }}
+    {{- if .Values.podSecurityPolicy.labels }}
+    {{- include "helper.tplValue" (dict "value" .Values.podSecurityPolicy.labels "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonLabels }}
+    {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  allowPrivilegeEscalation: false
+  fsGroup:
+    rule: 'MustRunAs'
+    ranges:
+      - min: {{ .Values.podSecurityContext.fsGroup }}
+        max: {{ .Values.podSecurityContext.fsGroup }}
+  hostIPC: false
+  hostNetwork: false
+  hostPID: false
+  privileged: false
+  readOnlyRootFilesystem: false
+  requiredDropCapabilities:
+    - ALL
+  runAsUser:
+    rule: 'MustRunAs'
+    ranges:
+      - min: {{ .Values.podSecurityContext.runAsUser }}
+        max: {{ .Values.podSecurityContext.runAsUser }}
+  seLinux:
+    rule: 'RunAsAny'
+  supplementalGroups:
+    rule: 'MustRunAs'
+    ranges:
+      - min: {{ .Values.podSecurityContext.runAsUser }}
+        max: {{ .Values.podSecurityContext.runAsUser }}
+  volumes:
+    - 'configMap'
+    - 'secret'
+    - 'emptyDir'
+    - 'persistentVolumeClaim'
+{{- end }}

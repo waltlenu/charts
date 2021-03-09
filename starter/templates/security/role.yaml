@@ -1,0 +1,58 @@
+{{- if and .Values.serviceAccount.create .Values.rbac.create .Values.rbac.roleRules }}
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: {{ default (include "helper.fullname" .) .Values.rbac.name }}
+  namespace: {{ .Release.Namespace }}
+  {{- if or .Values.rbac.annotations .Values.commonAnnotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.commonAnnotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+    {{- if .Values.rbac.annotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.rbac.annotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels: {{- include "helper.labels" . | nindent 4 }}
+    {{- if .Values.rbac.labels }}
+    {{- include "helper.tplValue" (dict "value" .Values.rbac.labels "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonLabels }}
+    {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
+    {{- end }}
+rules:
+{{- toYaml .Values.rbac.roleRules | nindent 2 }}
+{{- end }}
+
+---
+
+{{- if and .Values.serviceAccount.create .Values.rbac.create .Values.rbac.roleRules }}
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: {{ default (include "helper.fullname" .) .Values.rbac.name }}
+  namespace: {{ .Release.Namespace }}
+  {{- if or .Values.rbac.annotations .Values.commonAnnotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.commonAnnotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+    {{- if .Values.rbac.annotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.rbac.annotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels: {{- include "helper.labels" . | nindent 4 }}
+    {{- if .Values.rbac.labels }}
+    {{- include "helper.tplValue" (dict "value" .Values.rbac.labels "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonLabels }}
+    {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
+    {{- end }}
+subjects:
+  - kind: ServiceAccount
+    name: {{ default (include "helper.fullname" .) .Values.serviceAccount.name }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: {{ default (include "helper.fullname" .) .Values.rbac.name }}
+{{- end }}

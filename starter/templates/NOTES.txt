@@ -1,0 +1,51 @@
+### Please be patient while the chart is being deployed ###
+
+# Monitor rollout
+kubectl rollout status --namespace {{ .Release.Namespace }} {{ .Values.kind }}/{{ template "helper.fullname" . }}
+
+
+### List deployed objects ###
+
+# Get {{ .Values.kind }}, Pod(s)
+kubectl get --namespace {{ .Release.Namespace }} Pod,{{ .Values.kind }} -l chart={{ include "helper.chart" . }}
+
+{{ if .Values.autoscaling.create }}
+# Get HorizontalPodAutoscaler
+kubectl get --namespace {{ .Release.Namespace }} HorizontalPodAutoscaler
+{{- end }}
+{{ if .Values.podDisruptionBudget.create }}
+# Get PodDisruptionBudget
+kubectl get --namespace {{ .Release.Namespace }} PodDisruptionBudget
+{{- end }}
+{{ if .Values.podSecurityPolicy.create }}
+# Get PodSecurityPolicy
+kubectl get --namespace {{ .Release.Namespace }} PodSecurityPolicy
+{{- end }}
+{{ if .Values.serviceAccount.create }}
+# Get ServiceAccount
+kubectl get --namespace {{ .Release.Namespace }} ServiceAccount
+{{- end }}
+
+{{ if .Values.secret.create }}
+# Get Secret
+kubectl get --namespace {{ .Release.Namespace }} Secret
+{{- end }}
+{{ if .Values.configMap.create }}
+# Get ConfigMap
+kubectl get --namespace {{ .Release.Namespace }} ConfigMap
+{{- end }}
+
+# Get Ingress, Service
+kubectl get --namespace {{ .Release.Namespace }} Ingress,Service
+
+
+### Helm Test ###
+
+## Run Helm test
+helm test --namespace {{ .Release.Namespace }} {{ .Release.Name }}
+
+## Monitor test Pod
+kubectl get --namespace {{ .Release.Namespace }} Pod -l component=test-connection
+
+## Delete successful Pod(s)
+kubectl delete --namespace {{ .Release.Namespace }} Pod --field-selector=status.phase==Succeeded
