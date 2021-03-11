@@ -59,18 +59,18 @@ Usage:
 Common labels
 */}}
 {{- define "helper.labels" -}}
-app: {{ include "helper.name" . }}
-chart: {{ include "helper.chart" . }}
-release: {{ .Release.Name }}
-heritage: {{ .Release.Service }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+app.kubernetes.io/name: {{ include "helper.name" . }}
+helm.sh/chart: {{ include "helper.chart" . }}
 {{- end -}}
 
 {{/*
 Labels to use on deploy.spec.selector.matchLabels and svc.spec.selector
 */}}
 {{- define "helper.matchLabels" -}}
-app: {{ include "helper.name" . }}
-release: {{ .Release.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/name: {{ include "helper.name" . }}
 {{- end -}}
 
 {{/*
@@ -149,13 +149,6 @@ imagePullSecrets:
   - name: {{ . }}
 {{- end }}
 {{- end -}}
-{{- end -}}
-
-{{/*
-Return the proper Persistent Volume Claim
-*/}}
-{{- define "helper.pvc" -}}
-{{- .Values.persistence.existingClaim | default (include "helper.fullname" .) -}}
 {{- end -}}
 
 {{/*

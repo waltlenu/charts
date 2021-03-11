@@ -19,19 +19,19 @@ fullnameOverride:
 kind: Deployment
 
 ## Number of replicas
-replicaCount: 2
+replicaCount: 1
 
 ## Workload image
 image:
   registry: docker.io
-  repository: library/nginx
+  repository: waltlenu/caddy
 
   ## The command field corresponds to entrypoint in the Docker runtime
-  # ex: command: ["/home/app/binary"]
+  # ex: command: ["/usr/sbin/caddy"]
   command:
 
   # tag will default to the chart's appVersion
-  tag: stable
+  tag: latest
 
   ## Specify a imagePullPolicy, defaults to 'Always'
   ## ref: http://kubernetes.io/docs/user-guide/images/#pre-pulling-images
@@ -52,7 +52,7 @@ extraArgs: {}
 ## and the port they are exposed on (see service.)
 containerPorts:
   - name: http
-    containerPort: 80
+    containerPort: 8080
     protocol: TCP
 
 ## Containers' resource requests and limits
@@ -71,9 +71,9 @@ resources:
 ## See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster for
 ## notes on enabling and using sysctls
 podSecurityContext:
-  fsGroup: 100
-  runAsUser: 101
-  runAsGroup: 101
+  fsGroup: 101
+  runAsUser: 10000
+  runAsGroup: 10000
 
 ## Kubernetes Security Context
 ## https://kubernetes.io/docs/tasks/configure-pod-container/security-context
@@ -85,7 +85,7 @@ securityContext:
 # livenessProbe:
 #   httpGet:
 #     path: /healthz
-#     port: 80
+#     port: 8080
 #     scheme: HTTP
 #   failureThreshold: 3
 #   initialDelaySeconds: 10
@@ -95,7 +95,7 @@ securityContext:
 # readinessProbe:
 #   httpGet:
 #     path: /readyz
-#     port: 80
+#     port: 8080
 #     scheme: HTTP
 #   failureThreshold: 3
 #   initialDelaySeconds: 10
@@ -264,6 +264,96 @@ rbac:
   ## Provide any additional label which may be required.
   labels: {}
 
+## Pod Disruption Budget configuration
+## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb
+podDisruptionBudget:
+  ## Specifies whether a podDisruptionBudget should be created
+  create: true
+
+  ## The name of the Pod Disruption Budget to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Mutually exclusive
+  ## Min number of pods that must still be available after the eviction
+  minAvailable: 1
+  ## Max number of pods that can be unavailable after the eviction
+  maxUnavailable:
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## If true, create & use Pod Security Policy resources
+## https://kubernetes.io/docs/concepts/policy/pod-security-policy
+podSecurityPolicy:
+  ## Specifies whether a podSecurityPolicy should be created
+  create: true
+
+  ## The name of the podSecurityPolicy to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
+## Autoscaling parameters
+## Configure the Horizontal Pod Autoscaler resource that allows you automatically scales the number of Pods
+## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
+autoscaling:
+  ## Specifies whether a Ingress should be created (if .values is not empty)
+  create: false
+
+  ## The name of the Ingress to use.
+  ## If not set and create is true, a name is generated using the helper.fullname template
+  name:
+
+  # Minimum amount of Pods
+  minReplicas: 1
+
+  # Maxiumum amount of Pods
+  maxReplicas: 10
+
+  # Custom metrics
+  metrics:
+    - type: Resource
+      resource:
+        name: cpu
+        target:
+          type: Utilization
+          averageUtilization: 50
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 50
+    # use a "Pods" metric, which takes the average of the
+    # given metric across all pods controlled by the autoscaling target
+    - type: Pods
+      pods:
+        metric:
+          name: http_requests
+        target:
+          # target 500 milli-requests per second,
+          # which is 1 request every two seconds
+          averageValue: 500m
+          type: AverageValue
+
+  ## Annotations evaluated as a template.
+  ## Only used if `create` is `true`.
+  annotations: {}
+
+  ## Provide any additional label which may be required.
+  labels: {}
+
 ## Configuration Map
 ## ref: https://kubernetes.io/docs/concepts/configuration/configmap
 configMap:
@@ -331,16 +421,24 @@ secret:
   labels: {}
 
 ## Enable persistence using Persistent Volume Claims
-## ref: http://kubernetes.io/docs/user-guide/persistent-volumes/
+## Deployments and DaemonSets will use emptyDir{}
+## ref: http://kubernetes.io/docs/user-guide/persistent-volumes
 persistence:
   ## If true, use a Persistent Volume Claim, If false, use emptyDir
-  enabled: true
+  create: false
 
   ## Volume name for for Persistent Volume Claim or emptyDir:
   name: data
 
   ## Mountpoint for Persistent Volume Claim or emptyDir
   path: /data
+
+  ## Empty directory settings. Default to local disk storage (Deployment and DaemonSet).
+  ## Specify `medium` to use `tmpfs`, size will be 50% of node's RAM:
+  ## sizeLimit is WIP: https://github.com/kubernetes/kubernetes/pull/94444
+  # emptyDir:
+  #   medium: Memory
+  emptyDir:
 
   ## Persistent Volume Storage Class
   ## If defined, storageClassName: <storageClass>
@@ -352,12 +450,12 @@ persistence:
 
   ## If persistence is enabled, and this value is defined,
   ## then accept the value as an existing Persistent Volume Claim to which
-  ## the container should be bound
+  ## the container should be bound (Deployment and DaemonSet)
   existingClaim:
 
   ## If persistence is enabled, and this value is defined, then
   ## accept the value as an existing Persistent Volume to which
-  ## should be added as match label selector to the volumeClaimTemplate
+  ## should be added as match label selector to the volumeClaimTemplate (StatefulSet)
   existingVolume:
 
   ## Persistent Volume Access Mode
@@ -366,46 +464,6 @@ persistence:
 
   ## Persistent Volume size
   size: 1Gi
-
-  ## Annotations evaluated as a template.
-  ## Only used if `create` is `true`.
-  annotations: {}
-
-  ## Provide any additional label which may be required.
-  labels: {}
-
-## Pod Disruption Budget configuration
-## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb
-podDisruptionBudget:
-  ## Specifies whether a podDisruptionBudget should be created
-  create: false
-
-  ## The name of the Pod Disruption Budget to use.
-  ## If not set and create is true, a name is generated using the helper.fullname template
-  name:
-
-  ## Mutually exclusive
-  ## Min number of pods that must still be available after the eviction
-  minAvailable: 1
-  ## Max number of pods that can be unavailable after the eviction
-  maxUnavailable: 1
-
-  ## Annotations evaluated as a template.
-  ## Only used if `create` is `true`.
-  annotations: {}
-
-  ## Provide any additional label which may be required.
-  labels: {}
-
-## If true, create & use Pod Security Policy resources
-## https://kubernetes.io/docs/concepts/policy/pod-security-policy
-podSecurityPolicy:
-  ## Specifies whether a podSecurityPolicy should be created
-  create: true
-
-  ## The name of the podSecurityPolicy to use.
-  ## If not set and create is true, a name is generated using the helper.fullname template
-  name:
 
   ## Annotations evaluated as a template.
   ## Only used if `create` is `true`.
@@ -431,8 +489,8 @@ service:
   ## ref: https://kubernetes.io/docs/concepts/services-networking/service/#type-nodeport
   ports:
     - name: http
-      port: 80
-      targetPort: 80
+      port: 8080
+      targetPort: 8080
       protocol: TCP
       nodePort:
 
@@ -535,7 +593,7 @@ metrics:
 
   ## Prometheus Operator ServiceMonitor configuration
   serviceMonitor:
-    enabled: true
+    create: true
 
     ## The name of the ServiceMonitor to use.
     ## If not set and create is true, a name is generated using the helper.fullname template
@@ -559,53 +617,3 @@ metrics:
     additionalLabels: {}
     namespace: ""
     rules: []
-
-## Autoscaling parameters
-## Configure the Horizontal Pod Autoscaler resource that allows you automatically scales the number of Pods
-## ref: https://kubernetes.io/docs/tasks/run-application/horizontal-pod-autoscale/
-autoscaling:
-  ## Specifies whether a Ingress should be created (if .values is not empty)
-  create: true
-
-  ## The name of the Ingress to use.
-  ## If not set and create is true, a name is generated using the helper.fullname template
-  name:
-
-  # Minimum amount of Pods
-  minReplicas: 1
-
-  # Maxiumum amount of Pods
-  maxReplicas: 10
-
-  # Custom metrics
-  metrics:
-    - type: Resource
-      resource:
-        name: cpu
-        target:
-          type: Utilization
-          averageUtilization: 50
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 50
-    # use a "Pods" metric, which takes the average of the
-    # given metric across all pods controlled by the autoscaling target
-    - type: Pods
-      pods:
-        metric:
-          name: http_requests
-        target:
-          # target 500 milli-requests per second,
-          # which is 1 request every two seconds
-          averageValue: 500m
-          type: AverageValue
-
-  ## Annotations evaluated as a template.
-  ## Only used if `create` is `true`.
-  annotations: {}
-
-  ## Provide any additional label which may be required.
-  labels: {}

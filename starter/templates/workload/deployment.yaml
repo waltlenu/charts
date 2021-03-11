@@ -14,7 +14,7 @@ metadata:
 spec:
   selector:
     matchLabels: {{- include "helper.matchLabels" . | nindent 6 }}
-  {{- if not .Values.autoscaling.enabled }}
+  {{- if not .Values.autoscaling.create }}
   replicas: {{ .Values.replicaCount }}
   {{- end }}
   template:
@@ -99,8 +99,6 @@ spec:
           {{- end }}
           {{- end }}
           volumeMounts:
-            - name: {{ .Values.persistence.name }}
-              mountPath: {{ .Values.persistence.path }}
           {{- if and .Values.configMap.create .Values.configMap.mount.enabled }}
             - name: {{ .Values.configMap.mount.name }}
               mountPath: {{ .Values.configMap.mount.path }}
@@ -109,6 +107,14 @@ spec:
             - name: {{ .Values.secret.mount.name }}
               mountPath: {{ .Values.secret.mount.path }}
               readOnly: true
+          {{- end }}
+          {{- if .Values.persistence.create }}
+            - name: {{ include "helper.fullname" . }}-{{ .Values.persistence.name }}
+              mountPath: {{ .Values.persistence.path }}
+          {{- end }}
+          {{- if .Values.persistence.existingClaim }}
+            - name: {{ .Values.persistence.existingClaim }}
+              mountPath: {{ .Values.persistence.path }}
           {{- end }}
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
@@ -139,19 +145,13 @@ spec:
           secret:
             secretName: {{ default (include "helper.fullname" .) .Values.secret.name }}
         {{- end }}
-        {{- if .Values.persistence.enabled }}
-        {{- if .Values.persistence.existingClaim }}
-        - name: {{ .Values.persistence.name }}
+        {{- if .Values.persistence.create }}
+        - name: {{ include "helper.fullname" . }}-{{ .Values.persistence.name }}
+          emptyDir: {{- toYaml .Values.persistence.emptyDir | nindent 12 }}
+        {{- else if .Values.persistence.existingClaim }}
+        - name: {{ include "helper.fullname" . }}-{{ .Values.persistence.name }}
           persistentVolumeClaim:
             claimName: {{ .Values.persistence.existingClaim }}
-        {{- else }}
-        - name: {{ .Values.persistence.name }}
-          persistentVolumeClaim:
-            claimName: {{ include "helper.fullname" . }}-{{ .Values.persistence.name }}
-        {{- end }}
-        {{- else }}
-        - name: {{ .Values.persistence.name }}
-          emptyDir: {}
         {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   {{- if .Values.updateStrategy }}

@@ -12,7 +12,7 @@ metadata:
     {{- include "helper.annotations" (dict "annotations" .Values.podAnnotations "context" $) | trim | nindent 4 }}
     {{- end }}
   labels:
-    component: "test-connection"
+    app.kubernetes.io/component: "test-connection"
     {{- include "helper.labels" . | nindent 4 }}
     {{- if .Values.commonLabels }}
     {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}

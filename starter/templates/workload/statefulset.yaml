@@ -12,12 +12,10 @@ metadata:
     {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
     {{- end }}
 spec:
-  serviceName: {{ include "helper.fullname" . }}
+  serviceName: {{ default (include "helper.fullname" .) .Values.service.name }}
   selector:
     matchLabels: {{- include "helper.matchLabels" . | nindent 6 }}
-  {{- if not .Values.autoscaling.enabled }}
   replicas: {{ .Values.replicaCount }}
-  {{- end }}
   template:
     metadata:
       {{- if .Values.podAnnotations }}
@@ -100,8 +98,6 @@ spec:
           {{- end }}
           {{- end }}
           volumeMounts:
-            - name: {{ .Values.persistence.name }}
-              mountPath: {{ .Values.persistence.path }}
           {{- if and .Values.configMap.create .Values.configMap.mount.enabled }}
             - name: {{ .Values.configMap.mount.name }}
               mountPath: {{ .Values.configMap.mount.path }}
@@ -110,6 +106,10 @@ spec:
             - name: {{ .Values.secret.mount.name }}
               mountPath: {{ .Values.secret.mount.path }}
               readOnly: true
+          {{- end }}
+          {{- if .Values.persistence.create }}
+            - name: {{ .Values.persistence.name }}
+              mountPath: {{ .Values.persistence.path }}
           {{- end }}
           {{- if .Values.resources }}
           resources: {{- toYaml .Values.resources | nindent 12 }}
@@ -150,14 +150,15 @@ spec:
           {{- end }}
       spec:
         accessModes: {{- toYaml .Values.persistence.accessModes | nindent 10 }}
-        {{- include "helper.storageClass" . | nindent 8 }}
-        resources:
-          requests:
-            storage: {{ .Values.persistence.size | quote }}
         {{- if .Values.persistence.existingVolume }}
         selector:
           matchLabels:
             volume: {{ .Values.persistence.existingVolume }}
+        {{- else if .Values.persistence.create }}}}
+        {{- include "helper.storageClass" . | nindent 8 }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
         {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   {{- if .Values.updateStrategy }}

@@ -51,8 +51,9 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: {{ default (include "helper.fullname" .) .Values.serviceAccount.name }}
+    namespace: {{ .Release.Namespace }}
 roleRef:
   apiGroup: rbac.authorization.k8s.io
-  kind: Role
+  kind: ClusterRole
   name: {{ default (include "helper.fullname" .) .Values.rbac.name }}
 {{- end }}
