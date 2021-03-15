@@ -86,23 +86,23 @@ spec:
             {{- end }}
           {{- if or .Values.configMap.loadAsEnvVars .Values.secret.loadAsEnvVars }}
           envFrom:
-          {{- if and .Values.configMap.create .Values.configMap.loadAsEnvVars }}
+          {{- if .Values.configMap.loadAsEnvVars }}
             - configMapRef:
                 name: {{ default (include "helper.fullname" .) .Values.configMap.name }}
                 optional: true
           {{- end }}
-          {{- if and .Values.secret.create .Values.secret.loadAsEnvVars }}
+          {{- if .Values.secret.loadAsEnvVars }}
             - secretRef:
                 name: {{ default (include "helper.fullname" .) .Values.secret.name }}
                 optional: true
           {{- end }}
           {{- end }}
           volumeMounts:
-          {{- if and .Values.configMap.create .Values.configMap.mount.enabled }}
+          {{- if .Values.configMap.mount.enabled }}
             - name: {{ .Values.configMap.mount.name }}
               mountPath: {{ .Values.configMap.mount.path }}
           {{- end }}
-          {{- if and .Values.secret.create .Values.secret.mount.enabled }}
+          {{- if .Values.secret.mount.enabled }}
             - name: {{ .Values.secret.mount.name }}
               mountPath: {{ .Values.secret.mount.path }}
               readOnly: true
@@ -129,6 +129,7 @@ spec:
         {{- if .Values.extraContainers }}
         {{- toYaml .Values.extraContainers | nindent 8 }}
         {{- end }}
+  {{- if .Values.persistence.create }}
   volumeClaimTemplates:
     - metadata:
         name: {{ .Values.persistence.name }}
@@ -160,6 +161,7 @@ spec:
           requests:
             storage: {{ .Values.persistence.size | quote }}
         {{- end }}
+  {{- end }}
   revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
   {{- if .Values.updateStrategy }}
   strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}

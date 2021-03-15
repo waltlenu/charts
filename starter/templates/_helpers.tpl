@@ -97,17 +97,6 @@ Also, we can't use a single if because lazy evaluation is not an option
 {{- end -}}
 
 {{/*
-Create the name of the service account to use
-*/}}
-{{- define "helper.serviceAccountName" -}}
-{{- if .Values.serviceAccount.create -}}
-    {{ default (include "helper.fullname" .) .Values.serviceAccount.name }}
-{{- else -}}
-    {{ default "default" .Values.serviceAccount.name }}
-{{- end -}}
-{{- end -}}
-
-{{/*
 Return the proper Image Pull Policy, will default to "Always"
 */}}
 {{- define "helper.imagePullPolicy" -}}
@@ -148,6 +137,28 @@ imagePullSecrets:
 {{- range .Values.image.pullSecrets }}
   - name: {{ . }}
 {{- end }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "helper.serviceAccountName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "helper.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
+{{- end -}}
+{{- end -}}
+
+{{/*
+Create the name of the ConfigMap to use
+*/}}
+{{- define "helper.configMapName" -}}
+{{- if .Values.serviceAccount.create -}}
+    {{ default (include "helper.fullname" .) .Values.serviceAccount.name }}
+{{- else -}}
+    {{ default "default" .Values.serviceAccount.name }}
 {{- end -}}
 {{- end -}}
 

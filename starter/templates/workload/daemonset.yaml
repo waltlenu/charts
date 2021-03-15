@@ -84,23 +84,23 @@ spec:
             {{- end }}
           {{- if or .Values.configMap.loadAsEnvVars .Values.secret.loadAsEnvVars }}
           envFrom:
-          {{- if and .Values.configMap.create .Values.configMap.loadAsEnvVars }}
+          {{- if .Values.configMap.loadAsEnvVars }}
             - configMapRef:
                 name: {{ default (include "helper.fullname" .) .Values.configMap.name }}
                 optional: true
           {{- end }}
-          {{- if and .Values.secret.create .Values.secret.loadAsEnvVars }}
+          {{- if .Values.secret.loadAsEnvVars }}
             - secretRef:
                 name: {{ default (include "helper.fullname" .) .Values.secret.name }}
                 optional: true
           {{- end }}
           {{- end }}
           volumeMounts:
-          {{- if and .Values.configMap.create .Values.configMap.mount.enabled }}
+          {{- if .Values.configMap.mount.enabled }}
             - name: {{ .Values.configMap.mount.name }}
               mountPath: {{ .Values.configMap.mount.path }}
           {{- end }}
-          {{- if and .Values.secret.create .Values.secret.mount.enabled }}
+          {{- if .Values.secret.mount.enabled }}
             - name: {{ .Values.secret.mount.name }}
               mountPath: {{ .Values.secret.mount.path }}
               readOnly: true
@@ -132,12 +132,12 @@ spec:
         {{- toYaml .Values.extraContainers | nindent 8 }}
         {{- end }}
       volumes:
-        {{- if and .Values.configMap.create .Values.configMap.mount.enabled }}
+        {{- if .Values.configMap.mount.enabled }}
         - name: {{ .Values.configMap.mount.name }}
           configMap:
             name: {{ default (include "helper.fullname" .) .Values.configMap.name }}
         {{- end }}
-        {{- if and .Values.secret.create .Values.secret.mount.enabled }}
+        {{- if .Values.secret.mount.enabled }}
         - name: {{ .Values.secret.mount.name }}
           secret:
             secretName: {{ default (include "helper.fullname" .) .Values.secret.name }}
