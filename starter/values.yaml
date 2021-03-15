@@ -268,7 +268,7 @@ rbac:
 ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb
 podDisruptionBudget:
   ## Specifies whether a podDisruptionBudget should be created
-  create: true
+  create: false
 
   ## The name of the Pod Disruption Budget to use.
   ## If not set and create is true, a name is generated using the helper.fullname template
@@ -358,16 +358,18 @@ autoscaling:
 ## ref: https://kubernetes.io/docs/concepts/configuration/configmap
 configMap:
   ## Specifies whether a ConfigMap should be created (if .values is not empty)
-  create: true
+  create: false
 
   ## The name of the ConfigMap to use.
   ## If not set and create is true, a name is generated using the helper.fullname template
   name:
 
   ## Load the key-values as environment variables in the Workload's main container
-  loadAsEnvVars: true
+  ## If set to true and create is set to false, an existing object will be loaded
+  loadAsEnvVars: false
 
   ## Populate a Volume with data stored in the ConfigMap
+  ## If set to true and create is set to false, an existing object will be mounted
   mount:
     enabled: false
     name: config
@@ -389,16 +391,18 @@ configMap:
 ## ref: https://kubernetes.io/docs/concepts/configuration/secret
 secret:
   ## Specifies whether a Secret should be created (if .values is not empty)
-  create: true
+  create: false
 
   ## The name of the Secret to use.
   ## If not set and create is true, a name is generated using the helper.fullname template
   name:
 
   ## Load the key-values as environment variables in the Workload's main container
-  loadAsEnvVars: true
+  ## If set to true and create is set to false, an existing object will be loaded
+  loadAsEnvVars: false
 
   ## Populate a Volume with data stored in the ConfigMap
+  ## If set to true and create is set to false, an existing object will be mounted
   mount:
     enabled: false
     name: secret
