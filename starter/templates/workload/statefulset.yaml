@@ -99,11 +99,11 @@ spec:
           {{- end }}
           volumeMounts:
           {{- if .Values.configMap.mount.enabled }}
-            - name: {{ .Values.configMap.mount.name }}
+            - name: {{ default (include "helper.fullname" .) .Values.configMap.mount.name  }}
               mountPath: {{ .Values.configMap.mount.path }}
           {{- end }}
           {{- if .Values.secret.mount.enabled }}
-            - name: {{ .Values.secret.mount.name }}
+            - name: {{ default (include "helper.fullname" .) .Values.secret.mount.name  }}
               mountPath: {{ .Values.secret.mount.path }}
               readOnly: true
           {{- end }}
@@ -129,6 +129,19 @@ spec:
         {{- if .Values.extraContainers }}
         {{- toYaml .Values.extraContainers | nindent 8 }}
         {{- end }}
+      {{- if or .Values.configMap.mount.enabled .Values.secret.mount.enabled }}
+      volumes:
+      {{- if .Values.configMap.mount.enabled }}
+        - name: {{ default (include "helper.fullname" .) .Values.configMap.mount.name  }}
+          configMap:
+            name: {{ default (include "helper.fullname" .) .Values.configMap.mount.name  }}
+      {{- end }}
+      {{- if .Values.secret.mount.enabled }}
+        - name: {{ default (include "helper.fullname" .) .Values.secret.mount.name  }}
+          secret:
+            name: {{ default (include "helper.fullname" .) .Values.secret.mount.name  }}
+      {{- end }}
+      {{- end }}
   {{- if .Values.persistence.create }}
   volumeClaimTemplates:
     - metadata:

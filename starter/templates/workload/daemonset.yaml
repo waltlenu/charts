@@ -97,11 +97,11 @@ spec:
           {{- end }}
           volumeMounts:
           {{- if .Values.configMap.mount.enabled }}
-            - name: {{ .Values.configMap.mount.name }}
+            - name: {{ default (include "helper.fullname" .) .Values.configMap.mount.name  }}
               mountPath: {{ .Values.configMap.mount.path }}
           {{- end }}
           {{- if .Values.secret.mount.enabled }}
-            - name: {{ .Values.secret.mount.name }}
+            - name: {{ default (include "helper.fullname" .) .Values.secret.mount.name  }}
               mountPath: {{ .Values.secret.mount.path }}
               readOnly: true
           {{- end }}

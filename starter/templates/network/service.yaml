@@ -50,7 +50,7 @@ spec:
       targetPort: {{ .targetPort }}
       protocol: {{ .protocol }}
       {{- if (and (eq $.Values.service.type "NodePort") (not (empty .nodePort)))}}
-      nodePort: {{ .Values.service.nodePort }}
+      nodePort: {{ .nodePort }}
       {{- else if eq $.Values.service.type "ClusterIP" }}
       nodePort: null
       {{- end }}
