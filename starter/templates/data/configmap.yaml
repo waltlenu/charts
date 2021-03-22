@@ -1,4 +1,4 @@
-{{- if and .Values.configMap.create .Values.configMap.values }}
+{{- if and .Values.configMap.create }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -20,5 +20,8 @@ metadata:
     {{- if .Values.commonLabels }}
     {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
     {{- end }}
-data: {{- include "helper.tplValue" (dict "value" .Values.configMap.values "context" $) | nindent 2 }}
+data: {{- if .Values.configMap.values }}{{- include "helper.tplValue" (dict "value" .Values.configMap.values "context" $) | nindent 2 }}{{- end }}
+{{- if .Values.configMap.glob.enabled }}
+{{ (.Files.Glob .Values.configMap.glob.pattern ).AsConfig | indent 2 }}
+{{- end }}
 {{- end }}

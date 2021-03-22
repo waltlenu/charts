@@ -155,7 +155,7 @@ spec:
         selector:
           matchLabels:
             volume: {{ .Values.persistence.existingVolume }}
-        {{- else if .Values.persistence.create }}}}
+        {{- else if .Values.persistence.create }}
         {{- include "helper.storageClass" . | nindent 8 }}
         resources:
           requests:

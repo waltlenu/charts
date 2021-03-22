@@ -380,6 +380,11 @@ configMap:
   #   foo: bar
   values: {}
 
+  ## Glob patterns
+  glob:
+    enabled: false
+    pattern: "confs/*"
+
   ## Annotations evaluated as a template.
   ## Only used if `create` is `true`.
   annotations: {}
