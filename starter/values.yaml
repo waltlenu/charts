@@ -71,14 +71,16 @@ resources:
 ## See https://kubernetes.io/docs/tasks/administer-cluster/sysctl-cluster for
 ## notes on enabling and using sysctls
 podSecurityContext:
-  fsGroup: 101
-  runAsUser: 10000
-  runAsGroup: 10000
+  fsGroup:
+  runAsUser:
+  runAsGroup:
 
 ## Kubernetes Security Context
 ## https://kubernetes.io/docs/tasks/configure-pod-container/security-context
 securityContext:
   allowPrivilegeEscalation: false
+  runAsUser: 10000
+  runAsGroup: 10000
 
 ## Liveness and readiness probe values
 ## Ref: https://kubernetes.io/docs/concepts/workloads/pods/pod-lifecycle/#container-probes
