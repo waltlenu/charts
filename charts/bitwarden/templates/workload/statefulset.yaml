@@ -1,0 +1,183 @@
+{{- if eq .Values.kind "StatefulSet" }}
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "helper.fullname" . }}
+  namespace: {{ .Release.Namespace }}
+  {{- if .Values.commonAnnotations }}
+  annotations: {{- include "helper.annotations" (dict "annotations" .Values.commonAnnotations "context" $) | trim | nindent 4 }}
+  {{- end }}
+  labels: {{- include "helper.labels" . | nindent 4 }}
+    {{- if .Values.commonLabels }}
+    {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  serviceName: {{ default (include "helper.fullname" .) .Values.service.name }}
+  selector:
+    matchLabels: {{- include "helper.matchLabels" . | nindent 6 }}
+  replicas: {{ .Values.replicaCount }}
+  template:
+    metadata:
+      {{- if .Values.podAnnotations }}
+      annotations: {{- include "helper.annotations" (dict "annotations" .Values.podAnnotations "context" $) | trim | nindent 8 }}
+      {{- end }}
+      labels: {{- include "helper.labels" . | nindent 8 }}
+        {{- if .Values.podLabels }}
+        {{- include "helper.tplValue" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
+        {{- end }}
+    spec:
+{{- include "helper.imagePullSecrets" . | indent 6 }}
+      {{- if .Values.extraInitContainers }}
+      initContainers: {{- toYaml .Values.extraInitContainers | nindent 8 }}
+      {{- end }}
+      dnsPolicy: {{ .Values.dnsPolicy }}
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity: {{- include "helper.tplValue" (dict "value" .Values.affinity "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- include "helper.tplValue" (dict "value" .Values.nodeSelector "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- include "helper.tplValue" (dict "value" .Values.tolerations "context" $) | nindent 8 }}
+      {{- end }}
+      {{- if .Values.podSecurityContext }}
+      securityContext: {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- end }}
+      hostNetwork: {{ .Values.hostNetwork }}
+      {{- if .Values.topologySpreadConstraints }}
+      topologySpreadConstraints: {{ toYaml .Values.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ template "helper.serviceAccountName" . }}
+      terminationGracePeriodSeconds: {{ .Values.terminationGracePeriodSeconds }}
+      containers:
+        - name: {{ template "helper.name" . }}
+          image: {{ template "helper.image" . }}
+          imagePullPolicy: "{{ include "helper.imagePullPolicy" . }}"
+          {{- if .Values.lifecycle }}
+          lifecycle: {{- toYaml .Values.lifecycle | nindent 12 }}
+          {{- end }}
+          {{- if .Values.image.command }}
+          command: {{ .Values.image.command }}
+          {{- end }}
+          {{- if .Values.extraArgs }}
+          args:
+          {{- range $key, $value := .Values.extraArgs }}
+            {{- if $value }}
+            - --{{ $key }}={{ $value }}
+            {{- else }}
+            - --{{ $key }}
+            {{- end }}
+          {{- end }}
+          {{- end }}
+          env:
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: POD_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            {{- if .Values.extraEnvs }}
+            {{- toYaml .Values.extraEnvs | nindent 12 }}
+            {{- end }}
+          {{- if or .Values.configMap.loadAsEnvVars .Values.secret.loadAsEnvVars }}
+          envFrom:
+          {{- if .Values.configMap.loadAsEnvVars }}
+            - configMapRef:
+                name: {{ default (include "helper.fullname" .) .Values.configMap.name }}
+                optional: true
+          {{- end }}
+          {{- if .Values.secret.loadAsEnvVars }}
+            - secretRef:
+                name: {{ default (include "helper.fullname" .) .Values.secret.name }}
+                optional: true
+          {{- end }}
+          {{- end }}
+          volumeMounts:
+          {{- if .Values.configMap.mount.enabled }}
+            - name: {{ default (include "helper.fullname" .) .Values.configMap.mount.name  }}
+              mountPath: {{ .Values.configMap.mount.path }}
+          {{- end }}
+          {{- if .Values.secret.mount.enabled }}
+            - name: {{ default (include "helper.fullname" .) .Values.secret.mount.name  }}
+              mountPath: {{ .Values.secret.mount.path }}
+              readOnly: true
+          {{- end }}
+          {{- if .Values.persistence.create }}
+            - name: {{ .Values.persistence.name }}
+              mountPath: {{ .Values.persistence.path }}
+          {{- end }}
+          {{- if .Values.resources }}
+          resources: {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+          {{- if .Values.containerPorts }}
+          ports: {{- toYaml .Values.containerPorts | nindent 12 }}
+          {{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe: {{- toYaml .Values.livenessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe: {{- toYaml .Values.readinessProbe | nindent 12 }}
+          {{- end }}
+          {{- if .Values.securityContext }}
+          securityContext: {{- toYaml .Values.securityContext | nindent 12 }}
+          {{- end }}
+        {{- if .Values.extraContainers }}
+        {{- toYaml .Values.extraContainers | nindent 8 }}
+        {{- end }}
+      {{- if or .Values.configMap.mount.enabled .Values.secret.mount.enabled }}
+      volumes:
+      {{- if .Values.configMap.mount.enabled }}
+        - name: {{ default (include "helper.fullname" .) .Values.configMap.mount.name  }}
+          configMap:
+            name: {{ default (include "helper.fullname" .) .Values.configMap.mount.name  }}
+      {{- end }}
+      {{- if .Values.secret.mount.enabled }}
+        - name: {{ default (include "helper.fullname" .) .Values.secret.mount.name  }}
+          secret:
+            name: {{ default (include "helper.fullname" .) .Values.secret.mount.name  }}
+      {{- end }}
+      {{- end }}
+  {{- if .Values.persistence.create }}
+  volumeClaimTemplates:
+    - metadata:
+        name: {{ .Values.persistence.name }}
+        {{- if or .Values.persistence.annotations .Values.commonAnnotations }}
+        annotations:
+          {{- if .Values.commonAnnotations }}
+          {{- include "helper.annotations" (dict "annotations" .Values.commonAnnotations "context" $) | trim | nindent 10 }}
+          {{- end }}
+          {{- if .Values.persistence.annotations }}
+          {{- include "helper.annotations" (dict "annotations" .Values.persistence.annotations "context" $) | trim | nindent 10 }}
+          {{- end }}
+        {{- end }}
+        labels: {{- include "helper.labels" . | nindent 10 }}
+          {{- if .Values.persistence.labels }}
+          {{- include "helper.tplValue" (dict "value" .Values.persistence.labels "context" $) | nindent 10 }}
+          {{- end }}
+          {{- if .Values.commonLabels }}
+          {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 10 }}
+          {{- end }}
+      spec:
+        accessModes: {{- toYaml .Values.persistence.accessModes | nindent 10 }}
+        {{- if .Values.persistence.existingVolume }}
+        selector:
+          matchLabels:
+            volume: {{ .Values.persistence.existingVolume }}
+        {{- else if .Values.persistence.create }}
+        {{- include "helper.storageClass" . | nindent 8 }}
+        resources:
+          requests:
+            storage: {{ .Values.persistence.size | quote }}
+        {{- end }}
+  {{- end }}
+  revisionHistoryLimit: {{ .Values.revisionHistoryLimit }}
+  {{- if .Values.updateStrategy }}
+  strategy: {{- toYaml .Values.updateStrategy | nindent 4 }}
+  {{- end }}
+  podManagementPolicy: Parallel
+{{- end }}
