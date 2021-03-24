@@ -2,7 +2,17 @@
 
 ![Version: 1.0.0](https://img.shields.io/badge/Version-1.0.0-informational?style=flat-square) ![Type: application](https://img.shields.io/badge/Type-application-informational?style=flat-square) ![AppVersion: 1.19.0](https://img.shields.io/badge/AppVersion-1.19.0-informational?style=flat-square)
 
-Bitwarden RS password manager
+Bitwarden RS password manager for personal use
+
+## TL;DR
+
+Helm chart that deploys a single node [Bitwarden RS](https://github.com/dani-garcia/bitwarden_rs) in a Kubernetes StatefulSet, backed by *SQLite*, stored on a persistent volume.
+
+The Ingress object can (and should) be secured with TLS using Cert Manager and Let's Encrypt.
+
+The chart is reasonably secure by default but adds a `ADMIN_TOKEN` that enable the `/admin` interface. The token should be modified as soon a possible.
+
+The chart should also provide enough hooks to enable passing a custom `config.json` for Bitwarden RS and should be easibly extendable to support RDBMS backends.
 
 **Homepage:** <https://github.com/waltlenu/charts>
 
