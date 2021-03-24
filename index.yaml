@@ -1,0 +1,25 @@
+apiVersion: v1
+entries:
+  bitwarden:
+  - annotations:
+      category: passwordmanager
+    apiVersion: v2
+    appVersion: 1.19.0
+    created: "2021-03-24T16:46:21.521315937Z"
+    description: Bitwarden RS password manager
+    digest: b531f5b054f8f2af92366f28ff6afddfd5c6dad1060b705132ab7ecb8faa5889
+    home: https://github.com/waltlenu/charts
+    icon: https://upload.wikimedia.org/wikipedia/commons/thumb/c/cc/Bitwarden_logo.svg/203px-Bitwarden_logo.svg.png
+    keywords:
+    - passwordmanager
+    maintainers:
+    - email: waltlenu@users.noreply.github.com
+      name: waltlenu
+    name: bitwarden
+    sources:
+    - https://github.com/dani-garcia/bitwarden_rs
+    type: application
+    urls:
+    - https://github.com/waltlenu/charts/releases/download/bitwarden-1.0.0/bitwarden-1.0.0.tgz
+    version: 1.0.0
+generated: "2021-03-24T16:46:21.521320637Z"
