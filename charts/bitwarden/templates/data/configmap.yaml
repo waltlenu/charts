@@ -1,0 +1,27 @@
+{{- if and .Values.configMap.create }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ default (include "helper.fullname" .) .Values.configMap.name }}
+  namespace: {{ .Release.Namespace }}
+  {{- if or .Values.configMap.annotations .Values.commonAnnotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.commonAnnotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+    {{- if .Values.configMap.annotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.configMap.annotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels: {{- include "helper.labels" . | nindent 4 }}
+    {{- if .Values.configMap.labels }}
+    {{- include "helper.tplValue" (dict "value" .Values.configMap.labels "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonLabels }}
+    {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
+    {{- end }}
+data: {{- if .Values.configMap.values }}{{- include "helper.tplValue" (dict "value" .Values.configMap.values "context" $) | nindent 2 }}{{- end }}
+{{- if .Values.configMap.glob.enabled }}
+{{ (.Files.Glob .Values.configMap.glob.pattern ).AsConfig | indent 2 }}
+{{- end }}
+{{- end }}

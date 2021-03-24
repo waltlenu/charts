@@ -1,0 +1,76 @@
+### Please be patient while the chart is being deployed ###
+
+
+# Monitor rollout
+kubectl rollout status --namespace {{ .Release.Namespace }} {{ .Values.kind }}/{{ template "helper.fullname" . }}
+
+### List deployed objects ###
+
+# Get {{ .Values.kind }}, Pod(s)
+kubectl get --namespace {{ .Release.Namespace }} {{ .Values.kind }},Pod -l helm.sh/chart={{ include "helper.chart" . }}
+
+{{ if .Values.serviceAccount.create }}
+# Get ServiceAccount
+kubectl get --namespace {{ .Release.Namespace }} ServiceAccount -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if and .Values.serviceAccount.create .Values.rbac.create .Values.rbac.roleRules }}
+# Get Role, RoleBinding
+kubectl get --namespace {{ .Release.Namespace }} Role,RoleBinding -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if and .Values.serviceAccount.create .Values.rbac.create .Values.rbac.clusterroleRules }}
+# Get ClusterRole, ClusterRoleBinding
+kubectl get --namespace {{ .Release.Namespace }} ClusterRole,ClusterRoleBinding -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if .Values.podDisruptionBudget.create }}
+# Get PodDisruptionBudget
+kubectl get --namespace {{ .Release.Namespace }} PodDisruptionBudget -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if .Values.podSecurityPolicy.create }}
+# Get PodSecurityPolicy
+kubectl get --namespace {{ .Release.Namespace }} PodSecurityPolicy -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if .Values.autoscaling.create }}
+# Get HorizontalPodAutoscaler
+kubectl get --namespace {{ .Release.Namespace }} HorizontalPodAutoscaler -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if and .Values.configMap.create .Values.configMap.values }}
+# Get ConfigMap
+kubectl get --namespace {{ .Release.Namespace }} ConfigMap -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if and .Values.secret.create .Values.secret.values }}
+# Get Secret
+kubectl get --namespace {{ .Release.Namespace }} Secret -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if .Values.persistence.create }}
+# Get Persistent Volume Claim
+kubectl get --namespace {{ .Release.Namespace }} PersistentVolumeClaim -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if .Values.service.create }}
+# Get Service
+kubectl get --namespace {{ .Release.Namespace }} Service -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+{{- if .Values.ingress.create }}
+# Get Ingress
+kubectl get --namespace {{ .Release.Namespace }} ingresses.v1.networking.k8s.io -l helm.sh/chart={{ include "helper.chart" . }}
+{{ end }}
+
+### Helm Test ###
+
+## Run Helm test
+helm test --namespace {{ .Release.Namespace }} {{ .Release.Name }}
+
+## Monitor test Pod
+kubectl get --namespace {{ .Release.Namespace }} Pod -l app.kubernetes.io/component=test-connection
+
+## Delete successful Pod(s)
+kubectl delete --namespace {{ .Release.Namespace }} Pod --field-selector=status.phase==Succeeded
