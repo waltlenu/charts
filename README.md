@@ -37,3 +37,8 @@ Useful Helm Client Commands:
 * Install a chart: `helm install my-release waltlenu/<chart-name>`
 * Upgrade your application: `helm upgrade`
 
+### Create new chart from starter
+
+```
+$ helm create charts/example -p $PWD/starter
+```

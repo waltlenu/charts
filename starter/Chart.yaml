@@ -1,0 +1,28 @@
+apiVersion: v2
+name: <CHARTNAME>
+description: Helm v3 starter chart
+
+annotations:
+  category: starter
+keywords:
+  - starter
+sources:
+  - https://github.com/waltlenu/charts
+home: https://github.com/waltlenu/charts
+icon: https://upload.wikimedia.org/wikipedia/commons/6/67/Kubernetes_logo.svg
+maintainers:
+  - email: waltlenu@users.noreply.github.com
+    name: waltlenu
+
+# A chart can be either an 'application' or a 'library' chart.
+type: application
+
+# This is the chart version.
+# This version number should be incremented each time you make changes to the chart and its templates
+# Versions are expected to follow Semantic Versioning (https://semver.org)
+version: 1.0.0
+
+# This is the version number of the application being deployed.
+# This version number should be incremented each time you make changes to the application.
+# Versions are not expected to follow Semantic Versioning.
+appVersion: 1.0.1
