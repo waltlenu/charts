@@ -75,7 +75,7 @@ podSecurityContext:
   runAsUser:
   runAsGroup:
 
-## Kubernetes Security Context
+## Main container Kubernetes Security Context
 ## https://kubernetes.io/docs/tasks/configure-pod-container/security-context
 securityContext:
   allowPrivilegeEscalation: false
@@ -231,7 +231,7 @@ serviceAccount:
 ## ref: https://kubernetes.io/docs/admin/authorization/rbac
 rbac:
   ## Specifies whether RBAC rules should be created
-  create: true
+  create: false
 
   ## The name of the RBAC rules to use.
   ## If not set and create is true, a name is generated using the helper.fullname template
@@ -571,7 +571,7 @@ ingress:
   ## Enable TLS configuration for the hostname defined at ingress.hostname parameter (defaults to false)
   ## TLS certificates will be retrieved from a TLS secret with name: {{- printf "%s-tls" .Values.ingress.hostname }}
   ## You can use the ingress.secrets parameter to create this TLS secret or relay on cert-manager to create it
-  tls:
+  tls: false
 
   ## The tls configuration for additional hostnames to be covered with this ingress record.
   ## see: https://kubernetes.io/docs/concepts/services-networking/ingress/#tls
@@ -583,6 +583,19 @@ ingress:
   #     - app3.local
   #   secretName: app3.local-tls
   extraTls:
+
+  ## Cert-Manager TLS: add Ingress annotation
+  certManager:
+    create: false
+
+    # Cert Manager issuer name
+    issuerName:
+
+    # Cert Manager ClusterIssuer name
+    clusterIssuerName:
+
+  ## External DNS: add Ingress annotation
+  externalDns: false
 
   ## Ingress annotations done as key:value pairs
   ## For a full list of possible NginX ingress annotations, please see
