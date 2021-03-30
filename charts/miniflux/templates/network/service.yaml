@@ -1,0 +1,58 @@
+{{- if .Values.service.create }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ default (include "helper.fullname" .) .Values.service.name }}
+  namespace: {{ .Release.Namespace }}
+  {{- if or .Values.service.annotations .Values.commonAnnotations }}
+  annotations:
+    {{- if .Values.commonAnnotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.commonAnnotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+    {{- if .Values.service.annotations }}
+    {{- include "helper.annotations" (dict "annotations" .Values.service.annotations "context" $) | trim | nindent 4 }}
+    {{- end }}
+  {{- end }}
+  labels: {{- include "helper.labels" . | nindent 4 }}
+    {{- if .Values.service.labels }}
+    {{- include "helper.tplValue" (dict "value" .Values.service.labels "context" $) | nindent 4 }}
+    {{- end }}
+    {{- if .Values.commonLabels }}
+    {{- include "helper.tplValue" (dict "value" .Values.commonLabels "context" $) | nindent 4 }}
+    {{- end }}
+spec:
+  selector: {{- include "helper.matchLabels" . | nindent 4 }}
+  type: {{ .Values.service.type }}
+  {{- if not (empty .Values.service.clusterIP) }}
+  clusterIP: {{ .Values.service.clusterIP | quote }}
+  {{- end }}
+  {{- if eq .Values.service.type "LoadBalancer" }}
+  {{- if .Values.service.externalIPs }}
+  externalIPs: {{- toYaml .Values.service.externalIPs | nindent 4 }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerIP }}
+  loadBalancerIP: {{ .Values.service.loadBalancerIP | quote }}
+  {{- end }}
+  {{- if .Values.service.loadBalancerSourceRanges }}
+  loadBalancerSourceRanges: {{- toYaml .Values.service.loadBalancerSourceRanges | nindent 4 }}
+  {{- end }}
+  {{- end }}
+  {{- if (or (eq .Values.service.type "LoadBalancer") (eq .Values.service.type "NodePort")) }}
+  externalTrafficPolicy: {{ .Values.service.externalTrafficPolicy | quote }}
+  {{- end }}
+  {{- if .Values.service.healthCheckNodePort }}
+  healthCheckNodePort: {{ .Values.service.healthCheckNodePort }}
+  {{- end }}
+  ports:
+  {{- range .Values.service.ports }}
+    - name: {{ .name }}
+      port: {{ .port }}
+      targetPort: {{ .targetPort }}
+      protocol: {{ .protocol }}
+      {{- if (and (eq $.Values.service.type "NodePort") (not (empty .nodePort)))}}
+      nodePort: {{ .nodePort }}
+      {{- else if eq $.Values.service.type "ClusterIP" }}
+      nodePort: null
+      {{- end }}
+  {{- end }}
+{{- end }}
