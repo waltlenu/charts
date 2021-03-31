@@ -22,4 +22,31 @@ entries:
     urls:
     - https://github.com/waltlenu/charts/releases/download/bitwarden-1.0.0/bitwarden-1.0.0.tgz
     version: 1.0.0
-generated: "2021-03-24T16:46:21.521320637Z"
+  miniflux:
+  - annotations:
+      category: rss
+    apiVersion: v2
+    appVersion: 2.0.29
+    created: "2021-03-31T09:34:44.816626085Z"
+    dependencies:
+    - name: postgresql
+      repository: https://charts.bitnami.com/bitnami
+      version: 10.3.13
+    description: Miniflux feed reader
+    digest: 876cc7268f48b6fabfd1ae2ba24ef2655e3680e621b8fb6f8051b682a66300df
+    home: https://github.com/waltlenu/charts
+    icon: https://upload.wikimedia.org/wikipedia/en/4/43/Feed-icon.svg
+    keywords:
+    - rss
+    - feedreader
+    maintainers:
+    - email: waltlenu@users.noreply.github.com
+      name: waltlenu
+    name: miniflux
+    sources:
+    - https://github.com/miniflux/v2
+    type: application
+    urls:
+    - https://github.com/waltlenu/charts/releases/download/miniflux-1.0.0/miniflux-1.0.0.tgz
+    version: 1.0.0
+generated: "2021-03-31T09:34:44.816631285Z"
